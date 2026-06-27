@@ -112,10 +112,13 @@
   }
 
   @media print{
-    @page{margin:14mm;}
-    body *{visibility:hidden !important;}
-    #printMount, #printMount *{visibility:visible !important;}
-    #printMount{position:absolute !important; left:0 !important; top:0 !important; width:100% !important;}
+    @page{margin:12mm;}
+    body.printing > *{display:none !important;}
+    body.printing #printMount{
+      display:block !important;
+      position:static !important; left:auto !important; top:auto !important; width:100% !important;
+    }
+    #printMount .cv-paper{padding:0 !important;}
     .lock-overlay{display:none !important;}
   }
 </style>
@@ -267,7 +270,21 @@
             show("payMsg","Payment cancelled. You can try again anytime.","err");
           }
         },
-        theme: { color: "#3a0ca3" }
+        theme: { color: "#3a0ca3" },
+        config: {
+          display: {
+            blocks: {
+              upi: {
+                name: "Pay using UPI",
+                instruments: [
+                  { method: "upi", flows: ["collect", "qr", "intent"] }
+                ]
+              }
+            },
+            sequence: ["block.upi"],
+            preferences: { show_default_blocks: true }
+          }
+        }
       };
 
       const rzp = new Razorpay(options);
@@ -288,8 +305,13 @@
   function downloadPdf(){
     if(!unlocked){ show("payMsg","Please complete payment first.","err"); return; }
     const mount = document.getElementById("printMount");
-    mount.innerHTML = '<div class="cv-paper" style="padding:0;">' + currentCvHtml + '</div>';
+    mount.innerHTML = '<div class="cv-paper">' + currentCvHtml + '</div>';
+    document.body.classList.add("printing");
     window.print();
+    setTimeout(function(){
+      document.body.classList.remove("printing");
+      mount.innerHTML = "";
+    }, 500);
   }
 
   function resetAll(){
