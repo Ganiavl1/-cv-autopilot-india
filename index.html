@@ -212,6 +212,7 @@
       currentCvHtml = data.cv; unlocked = false;
       document.getElementById("cvPaper").innerHTML = currentCvHtml;
       document.getElementById("cvFrame").className = "cv-frame locked";
+      document.getElementById("payBar").classList.remove("unlocked");
       document.getElementById("previewWrap").style.display = "block";
       clearMsg("payMsg");
       document.querySelector(".actions-unlocked").style.display = "none";
@@ -251,15 +252,18 @@
           if(v.ok){
             unlocked = true;
             document.getElementById("cvFrame").className = "cv-frame unlocked";
+            document.getElementById("payBar").classList.add("unlocked");
+            document.querySelector(".actions-unlocked").style.display = "flex";
             show("payMsg","Payment successful — your CV is unlocked. Download it below.","ok");
           }else{
             show("payMsg", (v.error || "We couldn't verify the payment.") + " If money was deducted, it will auto-refund.", "err");
+            btn.disabled = false;
+            btn.innerHTML = "Unlock & download — Pay ₹99 via UPI";
           }
-          btn.disabled = false;
-          btn.innerHTML = "Unlock & download — Pay ₹99 via UPI";
         },
         modal: {
           ondismiss: function(){
+            if(unlocked) return;
             btn.disabled = false;
             btn.innerHTML = "Unlock & download — Pay ₹99 via UPI";
             show("payMsg","Payment cancelled. You can try again anytime.","err");
@@ -292,6 +296,8 @@
 
   function resetAll(){
     currentCvHtml = ""; unlocked = false;
+    document.getElementById("payBar").classList.remove("unlocked");
+    document.querySelector(".actions-unlocked").style.display = "none";
     document.getElementById("previewWrap").style.display = "none";
     document.getElementById("career").value = "";
     document.getElementById("role").value = "";
