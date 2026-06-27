@@ -7,16 +7,16 @@
 <meta name="description" content="Paste your raw career info and download a professionally written, ATS-optimised CV. Pay ₹99 per download via UPI — no subscription." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <style>
   :root{
-    --ink:#2a1b12; --muted:#8a7a6b; --line:#ece3d6;
-    --bg:#FBF6EC; --card:#fffdf9;
-    --accent:#E8590C; --accent-deep:#c2480a;
-    --gold:#C9952E; --ok:#15803d; --err:#b42318;
-    --shadow:0 12px 34px rgba(42,27,18,.08);
-    --serif:'Fraunces',Georgia,'Times New Roman',serif;
+    --ink:#16113a; --muted:#6b6790; --line:#e7e4f2;
+    --bg:#f6f5fb; --card:#ffffff;
+    --accent:#ff5400; --accent-deep:#e84a00;
+    --indigo:#3a0ca3; --indigo-deep:#2d0980;
+    --ok:#15803d; --err:#b42318;
+    --shadow:0 14px 38px rgba(22,17,58,.10);
     --sans:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
   }
   *{box-sizing:border-box}
@@ -24,42 +24,45 @@
     margin:0; background:var(--bg); color:var(--ink);
     font-family:var(--sans); -webkit-font-smoothing:antialiased; line-height:1.55;
   }
-  .wrap{max-width:880px; margin:0 auto; padding:30px 18px 80px;}
+  .wrap{max-width:880px; margin:0 auto; padding:22px 18px 80px;}
 
-  header.hero{text-align:center; padding:18px 0 6px;}
-  .eyebrow{color:var(--gold); font-size:.72rem; letter-spacing:.22em; text-transform:uppercase; font-weight:500;}
-  .hrule{display:flex; align-items:center; justify-content:center; gap:14px; margin:16px 0 10px;}
-  .hrule .line{height:1px; width:46px; background:var(--gold);}
-  .hrule .line.fade{background:linear-gradient(90deg,var(--gold),transparent);}
-  .hrule .line.fade.left{background:linear-gradient(270deg,var(--gold),transparent);}
-  h1{font-family:var(--serif); font-weight:500; font-size:2.15rem; line-height:1.16; margin:0; letter-spacing:-.01em;}
-  h1 .hl{color:var(--accent);}
-  .sub{color:var(--muted); font-size:1.02rem; max-width:560px; margin:14px auto 0;}
-  .price-pill{display:inline-block; margin-top:16px; background:#fbe6d2; color:#a8430a;
-    border:1px solid #f3d3b6; padding:6px 15px; border-radius:999px; font-weight:600; font-size:.88rem;}
+  header.hero{
+    background:var(--accent);
+    border-radius:22px; padding:36px 26px 32px; text-align:center; color:#fff;
+    box-shadow:0 18px 44px rgba(255,84,0,.28); margin-top:8px; position:relative; overflow:hidden;
+  }
+  header.hero::after{
+    content:""; position:absolute; right:-40px; top:-40px; width:180px; height:180px;
+    background:radial-gradient(circle, rgba(58,12,163,.35), transparent 70%); pointer-events:none;
+  }
+  .eyebrow{font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; font-weight:700; opacity:.92;}
+  h1{font-size:2.3rem; line-height:1.12; margin:12px 0 8px; letter-spacing:-.02em; font-weight:900;}
+  .sub{font-size:1.0rem; max-width:540px; margin:10px auto 0; opacity:.95;}
+  .price-pill{display:inline-block; margin-top:16px; background:#fff; color:var(--accent-deep);
+    padding:7px 16px; border-radius:999px; font-weight:800; font-size:.88rem;}
 
-  .card{background:var(--card); border:1px solid var(--line); border-radius:16px;
-    box-shadow:var(--shadow); padding:24px; margin-top:26px;}
-  label{display:block; font-weight:600; font-size:.92rem; margin:0 0 6px;}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:18px;
+    box-shadow:var(--shadow); padding:24px; margin-top:22px;}
+  label{display:block; font-weight:700; font-size:.92rem; margin:0 0 6px;}
   .hint{color:var(--muted); font-size:.82rem; margin:-2px 0 10px;}
   input[type=text], textarea{
-    width:100%; border:1px solid var(--line); border-radius:10px; padding:12px 14px;
-    font:inherit; color:var(--ink); background:#fdfaf4; resize:vertical;
+    width:100%; border:1.5px solid var(--line); border-radius:12px; padding:12px 14px;
+    font:inherit; color:var(--ink); background:#fbfaff; resize:vertical;
   }
-  input[type=text]:focus, textarea:focus{outline:none; border-color:var(--accent); background:#fff;}
+  input[type=text]:focus, textarea:focus{outline:none; border-color:var(--indigo); background:#fff;}
   textarea{min-height:190px;}
 
-  .btn{appearance:none; border:none; cursor:pointer; font:inherit; font-weight:600;
-    border-radius:11px; padding:14px 20px; transition:transform .05s ease, background .15s, opacity .15s;}
+  .btn{appearance:none; border:none; cursor:pointer; font:inherit; font-weight:800;
+    border-radius:13px; padding:15px 20px; transition:transform .05s ease, background .15s, opacity .15s;}
   .btn:active{transform:translateY(1px);}
-  .btn-primary{background:var(--accent); color:#fff; width:100%; font-size:1.02rem; margin-top:16px;}
-  .btn-primary:hover{background:var(--accent-deep);}
-  .btn-pay{background:var(--accent); color:#fff; width:100%; font-size:1.05rem;}
-  .btn-pay:hover{background:var(--accent-deep);}
-  .btn-ghost{background:#fff; color:var(--accent); border:1px solid var(--accent);}
+  .btn-primary{background:var(--indigo); color:#fff; width:100%; font-size:1.02rem; margin-top:16px;}
+  .btn-primary:hover{background:var(--indigo-deep);}
+  .btn-pay{background:var(--indigo); color:#fff; width:100%; font-size:1.05rem;}
+  .btn-pay:hover{background:var(--indigo-deep);}
+  .btn-ghost{background:#fff; color:var(--indigo); border:2px solid var(--indigo);}
   .btn[disabled]{opacity:.55; cursor:not-allowed;}
 
-  .msg{margin-top:12px; font-size:.9rem; padding:10px 12px; border-radius:9px; display:none;}
+  .msg{margin-top:12px; font-size:.9rem; padding:10px 12px; border-radius:10px; display:none;}
   .msg.err{display:block; background:#fdeee9; color:var(--err); border:1px solid #f6cfc2;}
   .msg.ok{display:block; background:#eef7ef; color:var(--ok); border:1px solid #c3e6c8;}
 
@@ -67,12 +70,12 @@
     border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; vertical-align:-3px; margin-right:8px;}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  #previewWrap{display:none; margin-top:26px;}
-  .cv-frame{position:relative; background:#fff; border:1px solid var(--line); border-radius:14px;
+  #previewWrap{display:none; margin-top:24px;}
+  .cv-frame{position:relative; background:#fff; border:1px solid var(--line); border-radius:16px;
     box-shadow:var(--shadow); overflow:hidden;}
   .cv-paper{padding:46px 44px; position:relative; z-index:1; color:#1c1c1c; font-family:var(--sans);}
   .cv-paper h2{font-size:1.5rem; margin:0 0 2px; letter-spacing:-.02em;}
-  .cv-paper h3{font-size:1.02rem; margin:18px 0 6px; color:var(--accent-deep);
+  .cv-paper h3{font-size:1.02rem; margin:18px 0 6px; color:var(--indigo);
     border-bottom:2px solid var(--line); padding-bottom:4px;}
   .cv-paper p{margin:6px 0;}
   .cv-paper ul{margin:6px 0 10px; padding-left:20px;}
@@ -80,18 +83,18 @@
   .cv-paper strong{color:#1c1c1c;}
 
   .lock-overlay{position:absolute; inset:0; z-index:2; pointer-events:none;
-    background:repeating-linear-gradient(-35deg, rgba(201,149,46,.10) 0 2px, transparent 2px 150px);}
+    background:repeating-linear-gradient(-35deg, rgba(255,84,0,.10) 0 2px, transparent 2px 150px);}
   .lock-overlay::after{content:"CV AUTOPILOT • PREVIEW • CV AUTOPILOT • PREVIEW";
     position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-    transform:rotate(-30deg); font-weight:800; font-size:1.5rem; letter-spacing:.25em;
-    color:rgba(201,149,46,.20); white-space:nowrap;}
+    transform:rotate(-30deg); font-weight:900; font-size:1.5rem; letter-spacing:.25em;
+    color:rgba(255,84,0,.18); white-space:nowrap;}
   .locked .lock-overlay{display:block;}
   .unlocked .lock-overlay{display:none;}
 
-  .paybar{margin-top:18px; background:var(--card); border:1px solid var(--line); border-radius:14px;
+  .paybar{margin-top:18px; background:var(--card); border:1px solid var(--line); border-radius:16px;
     box-shadow:var(--shadow); padding:20px;}
-  .paybar .price{font-family:var(--serif); font-size:1.7rem; font-weight:500;}
-  .paybar .price small{font-family:var(--sans); font-size:.85rem; color:var(--muted); font-weight:500;}
+  .paybar .price{font-size:1.7rem; font-weight:900; color:var(--accent);}
+  .paybar .price small{font-size:.85rem; color:var(--muted); font-weight:500;}
   .paybar .compare{color:var(--muted); font-size:.86rem; margin:2px 0 12px;}
   .pay-methods{display:flex; gap:8px; align-items:center; margin-top:10px; color:var(--muted); font-size:.8rem; justify-content:center;}
   .pay-methods b{color:var(--ink);}
@@ -100,19 +103,19 @@
   .unlocked .actions-unlocked{display:flex;}
   .unlocked .paybar .locked-only{display:none;}
 
-  footer{text-align:center; color:var(--muted); font-size:.8rem; margin-top:42px;}
-  footer a{color:var(--accent); text-decoration:none;}
-  footer .dot{color:var(--gold);}
+  footer{text-align:center; color:var(--muted); font-size:.8rem; margin-top:40px;}
+  footer a{color:var(--accent); text-decoration:none; font-weight:600;}
+  footer .dot{color:var(--indigo);}
 
   @media (max-width:560px){
-    h1{font-size:1.7rem;} .cv-paper{padding:30px 22px;}
+    h1{font-size:1.8rem;} header.hero{padding:28px 18px;} .cv-paper{padding:30px 22px;}
   }
 
   @media print{
     @page{margin:14mm;}
-    body *{visibility:hidden;}
-    #printMount, #printMount *{visibility:visible;}
-    #printMount{position:absolute; left:0; top:0; width:100%;}
+    body *{visibility:hidden !important;}
+    #printMount, #printMount *{visibility:visible !important;}
+    #printMount{position:absolute !important; left:0 !important; top:0 !important; width:100% !important;}
     .lock-overlay{display:none !important;}
   }
 </style>
@@ -120,13 +123,8 @@
 <body>
 <div class="wrap">
   <header class="hero">
-    <div class="eyebrow">— CV Autopilot —</div>
-    <div class="hrule">
-      <span class="line fade left"></span>
-      <span class="eyebrow" style="letter-spacing:.1em;">India</span>
-      <span class="line fade"></span>
-    </div>
-    <h1>Paste your career.<br>Download a <span class="hl">job-ready CV</span>.</h1>
+    <div class="eyebrow">CV Autopilot · India</div>
+    <h1>Paste your career.<br>Download a job-ready CV.</h1>
     <p class="sub">An AI-written, ATS-optimised resume built for Indian recruiters and MNC screening. No subscription — pay only when you download.</p>
     <div class="price-pill">₹99 per download • UPI / GPay / PhonePe</div>
   </header>
@@ -269,7 +267,7 @@
             show("payMsg","Payment cancelled. You can try again anytime.","err");
           }
         },
-        theme: { color: "#E8590C" }
+        theme: { color: "#3a0ca3" }
       };
 
       const rzp = new Razorpay(options);
