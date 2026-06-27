@@ -277,12 +277,20 @@
               upi: {
                 name: "Pay using UPI",
                 instruments: [
-                  { method: "upi", flows: ["collect", "qr", "intent"] }
+                  { method: "upi", flows: ["collect"] }
+                ]
+              },
+              other: {
+                name: "Other payment methods",
+                instruments: [
+                  { method: "card" },
+                  { method: "netbanking" },
+                  { method: "wallet" }
                 ]
               }
             },
-            sequence: ["block.upi"],
-            preferences: { show_default_blocks: true }
+            sequence: ["block.upi", "block.other"],
+            preferences: { show_default_blocks: false }
           }
         }
       };
