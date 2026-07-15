@@ -82,6 +82,28 @@
   .cv-paper li{margin:3px 0;}
   .cv-paper strong{color:#1c1c1c;}
 
+  /* --- COPY DETERRENTS (locked state only) --- */
+  .locked .cv-paper{
+    -webkit-user-select:none; -moz-user-select:none; -ms-user-select:none; user-select:none;
+    -webkit-touch-callout:none;
+  }
+  /* fade the teaser out at the bottom so it clearly continues */
+  .locked .cv-paper::after{
+    content:""; position:absolute; left:0; right:0; bottom:0; height:160px;
+    background:linear-gradient(to bottom, rgba(255,255,255,0), #fff 92%);
+    pointer-events:none;
+  }
+  .unlocked .cv-paper::after{display:none;}
+
+  .teaser-note{
+    position:relative; z-index:3; margin:-40px 0 0; padding:18px 44px 30px; text-align:center;
+  }
+  .teaser-note .lockline{
+    display:inline-flex; align-items:center; gap:8px; background:#f4f1ff; color:var(--indigo);
+    border:1px dashed var(--indigo); border-radius:999px; padding:8px 16px; font-size:.85rem; font-weight:700;
+  }
+  .unlocked .teaser-note{display:none;}
+
   .lock-overlay{position:absolute; inset:0; z-index:2; pointer-events:none;
     background:repeating-linear-gradient(-35deg, rgba(255,84,0,.10) 0 2px, transparent 2px 150px);}
   .lock-overlay::after{content:"CV AUTOPILOT • PREVIEW • CV AUTOPILOT • PREVIEW";
@@ -108,7 +130,8 @@
   footer .dot{color:var(--indigo);}
 
   @media (max-width:560px){
-    h1{font-size:1.8rem;} header.hero{padding:28px 18px;} .cv-paper{padding:30px 22px;}
+    h1{font-size:1.8rem;} header.hero{padding:28px 18px;}
+    .cv-paper{padding:30px 22px;} .teaser-note{padding:18px 22px 26px;}
   }
 
   @media print{
@@ -151,13 +174,16 @@
     <div class="cv-frame locked" id="cvFrame">
       <div class="lock-overlay"></div>
       <div class="cv-paper" id="cvPaper"></div>
+      <div class="teaser-note">
+        <span class="lockline">🔒 This is a preview — unlock below to see &amp; download the full CV</span>
+      </div>
     </div>
 
     <div class="paybar" id="payBar">
       <div class="locked-only">
         <div class="price">₹99 <small>one-time • this CV</small></div>
         <div class="compare">Professional CV writers charge ₹500–₹2,000. Yours is ready now.</div>
-        <button class="btn btn-pay" id="payBtn" onclick="pay()">Unlock & download — Pay ₹99 via UPI</button>
+        <button class="btn btn-pay" id="payBtn" onclick="pay()">Unlock &amp; download — Pay ₹99 via UPI</button>
         <div class="pay-methods">Secured by <b>Razorpay</b> • UPI · GPay · PhonePe · Paytm · Cards</div>
       </div>
 
@@ -183,7 +209,8 @@
 <div id="printMount" style="position:absolute;left:-9999px;top:0;"></div>
 
 <script>
-  let currentCvHtml = "";
+  let currentCvHtml = "";   // full CV — only ever set AFTER payment
+  let lockedBlob = "";      // encrypted blob from the server (unreadable)
   let unlocked = false;
 
   function show(id, text, type){
@@ -191,6 +218,13 @@
     el.textContent = text; el.className = "msg " + type;
   }
   function clearMsg(id){ const el=document.getElementById(id); el.className="msg"; el.textContent=""; }
+
+  // --- copy deterrents while locked ---
+  const frameEl = document.getElementById("cvFrame");
+  frameEl.addEventListener("contextmenu", function(e){ if(!unlocked) e.preventDefault(); });
+  frameEl.addEventListener("copy", function(e){ if(!unlocked) e.preventDefault(); });
+  frameEl.addEventListener("cut", function(e){ if(!unlocked) e.preventDefault(); });
+  frameEl.addEventListener("dragstart", function(e){ if(!unlocked) e.preventDefault(); });
 
   async function generate(){
     const career = document.getElementById("career").value.trim();
@@ -210,8 +244,12 @@
       const data = await r.json();
       if(!r.ok){ throw new Error(data.error || "Generation failed"); }
 
-      currentCvHtml = data.cv; unlocked = false;
-      document.getElementById("cvPaper").innerHTML = currentCvHtml;
+      // Only the teaser is shown. The full CV stays encrypted in lockedBlob.
+      currentCvHtml = "";
+      lockedBlob = data.locked || "";
+      unlocked = false;
+
+      document.getElementById("cvPaper").innerHTML = data.preview || "";
       document.getElementById("cvFrame").className = "cv-frame locked";
       document.getElementById("payBar").classList.remove("unlocked");
       document.getElementById("previewWrap").style.display = "block";
@@ -229,6 +267,7 @@
   async function pay(){
     const btn = document.getElementById("payBtn");
     clearMsg("payMsg");
+    if(!lockedBlob){ show("payMsg","Please generate a CV first.","err"); return; }
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner"></span>Starting secure checkout…';
 
@@ -245,17 +284,25 @@
         description: "ATS-optimised CV — one download",
         order_id: order.orderId,
         handler: async function (response){
-          const vRes = await fetch("/api/verify",{
+          // Send payment proof + the locked blob. Server verifies then decrypts.
+          const vRes = await fetch("/api/reveal",{
             method:"POST", headers:{"Content-Type":"application/json"},
-            body: JSON.stringify(response)
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              locked: lockedBlob
+            })
           });
           const v = await vRes.json();
-          if(v.ok){
+          if(v.ok && v.cv){
             unlocked = true;
+            currentCvHtml = v.cv;                       // full CV arrives only now
+            document.getElementById("cvPaper").innerHTML = currentCvHtml;
             document.getElementById("cvFrame").className = "cv-frame unlocked";
             document.getElementById("payBar").classList.add("unlocked");
             document.querySelector(".actions-unlocked").style.display = "flex";
-            show("payMsg","Payment successful — your CV is unlocked. Download it below.","ok");
+            show("payMsg","Payment successful — your full CV is unlocked. Download it below.","ok");
           }else{
             show("payMsg", (v.error || "We couldn't verify the payment.") + " If money was deducted, it will auto-refund.", "err");
             btn.disabled = false;
@@ -298,7 +345,7 @@
   }
 
   function downloadPdf(){
-    if(!unlocked){ show("payMsg","Please complete payment first.","err"); return; }
+    if(!unlocked || !currentCvHtml){ show("payMsg","Please complete payment first.","err"); return; }
     const mount = document.getElementById("printMount");
     mount.innerHTML = '<div class="cv-paper">' + currentCvHtml + '</div>';
     document.body.classList.add("printing");
@@ -310,7 +357,7 @@
   }
 
   function resetAll(){
-    currentCvHtml = ""; unlocked = false;
+    currentCvHtml = ""; lockedBlob = ""; unlocked = false;
     document.getElementById("payBar").classList.remove("unlocked");
     document.querySelector(".actions-unlocked").style.display = "none";
     document.getElementById("previewWrap").style.display = "none";
