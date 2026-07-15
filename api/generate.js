@@ -1,7 +1,49 @@
-// api/generate.js — calls Anthropic server-side so ANTHROPIC_API_KEY is never
-// exposed to the browser. Tuned for Indian resume conventions. No npm deps.
+// api/generate.js — calls Anthropic server-side, then returns ONLY a short teaser
+// of the CV. The FULL CV is encrypted (AES-256-GCM) with a server-side key and
+// returned as an opaque blob. The browser cannot read it. /api/reveal.js decrypts
+// it only after a valid Razorpay payment signature. No DB, no npm deps.
+
+import crypto from "crypto";
 
 const MODEL = "claude-sonnet-4-6";
+
+// Derive a stable 32-byte key from a server secret. Uses CV_SECRET if set,
+// otherwise falls back to RAZORPAY_KEY_SECRET so you don't need a new env var.
+function getKey() {
+  const base = process.env.CV_SECRET || process.env.RAZORPAY_KEY_SECRET;
+  if (!base) return null;
+  return crypto.createHash("sha256").update(String(base)).digest(); // 32 bytes
+}
+
+function encrypt(plaintext) {
+  const key = getKey();
+  if (!key) throw new Error("Encryption not configured");
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv("aes-256-gcm", key, iv);
+  const ct = Buffer.concat([cipher.update(plaintext, "utf8"), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  // pack iv + tag + ciphertext into one base64 string
+  return Buffer.concat([iv, tag, ct]).toString("base64");
+}
+
+// Build a teaser: keep whole HTML blocks until we've shown ~40% of the CV,
+// always cutting on a tag boundary so the markup stays valid.
+function makeTeaser(html) {
+  const blocks = html.match(/<(h2|h3|p|ul|ol|div)[\s\S]*?<\/\1>/gi) || [];
+  if (!blocks.length) {
+    // Fallback: no recognisable blocks — show a small slice of text only.
+    return html.slice(0, Math.floor(html.length * 0.35));
+  }
+  const budget = Math.floor(html.length * 0.4);
+  let out = "";
+  for (const b of blocks) {
+    if (out.length + b.length > budget && out.length > 0) break;
+    out += b;
+  }
+  // Always keep at least the first block (name/heading) so it looks real.
+  if (!out) out = blocks[0];
+  return out;
+}
 
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
@@ -12,6 +54,7 @@ export default async function handler(req, res) {
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) return res.status(500).json({ error: "AI not configured" });
+  if (!getKey()) return res.status(500).json({ error: "Server not configured" });
 
   try {
     const body = typeof req.body === "string" ? JSON.parse(req.body || "{}") : (req.body || {});
@@ -73,7 +116,11 @@ Write the polished, ATS-optimized CV now as HTML body only.`;
 
     if (!cvHtml) return res.status(502).json({ error: "Empty result. Please try again." });
 
-    return res.status(200).json({ cv: cvHtml });
+    // The browser gets ONLY the teaser + an unreadable encrypted blob.
+    const preview = makeTeaser(cvHtml);
+    const locked = encrypt(cvHtml);
+
+    return res.status(200).json({ preview, locked });
   } catch (err) {
     console.error("generate.js error:", err);
     return res.status(500).json({ error: "Server error generating CV." });
